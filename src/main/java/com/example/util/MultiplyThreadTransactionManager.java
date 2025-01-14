@@ -89,8 +89,8 @@ public class MultiplyThreadTransactionManager {
                 transactionManager.rollback(transactionStatusList.get(i));
                 // 主线程移除资源
                 transactionResourceList.get(i).removeTransactionResource();
-                throw new RuntimeException("发生异常,全部事务回滚");
             }
+            throw new RuntimeException("发生异常,全部事务回滚");
         } else {
             log.info("全部事务正常提交");
             for (int i = 0; i < transactionStatusList.size() && i < transactionResourceList.size(); i++) {
