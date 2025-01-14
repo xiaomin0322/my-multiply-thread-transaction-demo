@@ -41,7 +41,7 @@ public class TestController {
 
         tasks.add(() -> {
             updateUserAge(2, 23);
-//            throw new RuntimeException("update user age error");
+            throw new RuntimeException("update user age error");
         });
 
         multiplyThreadTransactionManager.execute(tasks, multiplyThreadTransactionExecutor);
