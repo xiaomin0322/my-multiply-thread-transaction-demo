@@ -1,8 +1,21 @@
 package com.example.util;
 
-import lombok.Builder;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import javax.annotation.Resource;
+import javax.sql.DataSource;
+
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
@@ -10,25 +23,33 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
-import javax.annotation.Resource;
-import javax.management.RuntimeErrorException;
-
-import java.util.*;
-import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicBoolean;
+import lombok.Builder;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class MultiplyThreadTransactionManager {
 
-    @Resource
-    private PlatformTransactionManager transactionManager;
+    //@Resource
+    //private PlatformTransactionManager transactionManager;
+    
+    /**
+     * 如果是多数据源的情况下,需要指定具体是哪一个数据源
+     */
+    private final DataSource dataSource;
+    
+    private DataSourceTransactionManager getTransactionManager() {
+        return new DataSourceTransactionManager(dataSource);
+    }
 
     public void execute(List<Runnable> tasks, Executor executor) {
         if (executor == null) {
             throw new IllegalArgumentException("线程池不能为空");
         }
+        
+        DataSourceTransactionManager transactionManager = getTransactionManager();
         //是否发生了异常
         AtomicBoolean ifException = new AtomicBoolean();
 
