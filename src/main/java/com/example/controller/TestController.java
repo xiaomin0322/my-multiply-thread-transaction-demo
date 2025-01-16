@@ -6,6 +6,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 import javax.annotation.Resource;
 
+import org.assertj.core.util.Lists;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -57,16 +58,16 @@ public class TestController {
     
     @RequestMapping("transaction2")
     public String transaction2(Integer par) {
-        List<Runnable> tasks = new ArrayList<>();
+        List<List<Runnable>> tasks = new ArrayList<>();
 
-        tasks.add(() -> updateUserName(1, "lijun.pan"));
+        tasks.add(Lists.newArrayList(() -> updateUserName(1, "lijun.pan")));
 
-        tasks.add(() -> {
+        tasks.add(Lists.newArrayList(() ->{
             updateUserAge(2, 23);
             if(par!=null && par == 1) {
             	 throw new RuntimeException("update user age error");
             }
-        });
+        }));
         //这里自动就回滚了
         log.info("runAsyncButWaitUntilAllDown runAsyncButWaitUntilAllDown");
         multiplyThreadTransactionManagerExt.runAsyncButWaitUntilAllDown(tasks, false);
@@ -92,13 +93,13 @@ public class TestController {
      */
     @RequestMapping("transaction3")
     public String transaction3(Integer par) {
-        List<Runnable> tasks = new ArrayList<>();
+    	 List<List<Runnable>> tasks = new ArrayList<>();
 
-        tasks.add(() -> updateUserName(1, "lijun.pan3"));
+    	 tasks.add(Lists.newArrayList(() -> updateUserName(1, "lijun.pan3")));
 
-        tasks.add(() -> {
+    	 tasks.add(Lists.newArrayList(() -> {
             updateUserAge(2, 233);
-        });
+        }));
 
         log.info("runAsyncButWaitUntilAllDown runAsyncButWaitUntilAllDown");
         //设置为true为自动提交
@@ -130,7 +131,7 @@ public class TestController {
     @Transactional(rollbackFor = Exception.class)
     public String updateNameException() {
     	//如果不同线程先修同一条数据会出现死锁，所以这里修改id=3得数据
-        updateUserName(3, "Exception");
+        updateUserName(2, "Exception");
         throw new RuntimeException("update user age error");
         //return "success";
     }

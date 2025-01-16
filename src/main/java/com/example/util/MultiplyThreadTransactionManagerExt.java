@@ -37,7 +37,7 @@ public class MultiplyThreadTransactionManagerExt {
      * @param tasks             任务列表
      * @param immediatelyCommit 是否需要立即提交
      */
-    public List<CompletableFuture> runAsyncButWaitUntilAllDown(List<Runnable> tasks,  Boolean immediatelyCommit) {
+    public List<CompletableFuture> runAsyncButWaitUntilAllDown(List<List<Runnable>> tasks,  Boolean immediatelyCommit) {
         Executor executor = Executors.newCachedThreadPool();
         DataSourceTransactionManager transactionManager = getTransactionManager();
         //是否发生了异常
@@ -68,7 +68,11 @@ public class MultiplyThreadTransactionManagerExt {
                             System.out.println("atomicInteger.get()"+atomicInteger.incrementAndGet());
                             System.out.println(transactionStatus);
                             //2.异步任务执行
-                            task.run();
+                            for (Runnable t : task) {
+                                // 串行执行任务
+                                t.run();
+                                log.info("任务执行 successfully");
+                            }
                             log.info("异步任务执行 successfully");
                             //3.继续事务资源复制,因为在sql执行是会产生新的资源对象
                             transactionResources.add(TransactionResource.copyTransactionResource());
