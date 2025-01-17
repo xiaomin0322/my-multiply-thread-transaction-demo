@@ -53,7 +53,7 @@ public class JobExecutor {
 	}
 
 	@SuppressWarnings("rawtypes")
-	public static <T> List<CompletableFuture> executeRunnableLists(List<List<Runnable>> runnableLists) {
+	public static <T> List<CompletableFuture> executeRunnableListsByCommonExecutor(List<List<Runnable>> runnableLists) {
 		List<CompletableFuture> futures = new ArrayList<>();
 		for (List<Runnable> runnableList : runnableLists) {
 			// 对于每个子列表的 Runnable，根据情况进行并行或串行执行
@@ -73,6 +73,33 @@ public class JobExecutor {
         //CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
 		return futures;
 	}
+	
+    @SuppressWarnings("rawtypes")
+    public static <T> List<CompletableFuture> executeRunnableLists(List<List<Runnable>> runnableLists) {
+        List<CompletableFuture> futures = new ArrayList<>();
+        // 为每个调用创建一个新的 ExecutorService
+        ExecutorService executorService = Executors.newCachedThreadPool();
+        try {
+            for (List<Runnable> runnableList : runnableLists) {
+                // 对于每个子列表的 Runnable，根据情况进行并行或串行执行
+                if (runnableList.size() > 1) {
+                    // 串行执行
+                    futures.add(CompletableFuture.runAsync(() -> {
+                        for (Runnable runnable : runnableList) {
+                            runnable.run();
+                        }
+                    }, executorService));
+                } else if (runnableList.size() == 1) {
+                    // 并行执行单个 Runnable
+                    futures.add(CompletableFuture.runAsync(runnableList.get(0), executorService));
+                }
+            }
+        } finally {
+            // 确保在使用完后关闭 ExecutorService
+            executorService.shutdown();
+        }
+        return futures;
+    }
 
 	/**
 	 * 将List<List<T>> 转换成可以 List<List<Runnable>>
