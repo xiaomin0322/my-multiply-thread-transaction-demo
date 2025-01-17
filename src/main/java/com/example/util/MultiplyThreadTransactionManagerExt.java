@@ -38,7 +38,7 @@ public class MultiplyThreadTransactionManagerExt {
      * @param immediatelyCommit 是否需要立即提交
      */
     public List<CompletableFuture> runAsyncButWaitUntilAllDown(List<List<Runnable>> tasks,  Boolean immediatelyCommit) {
-        Executor executor = Executors.newCachedThreadPool();
+    	ExecutorService executor = Executors.newCachedThreadPool();
         DataSourceTransactionManager transactionManager = getTransactionManager();
         //是否发生了异常
         AtomicBoolean ex = new AtomicBoolean();
@@ -53,7 +53,7 @@ public class MultiplyThreadTransactionManagerExt {
             mainNativeResourceThreadLocal.set(new HashMap<>(resourceMap));
         }
         Map<String, String> copyOfContextMap = MDC.getCopyOfContextMap();
-        Executor finalExecutor = executor;
+        ExecutorService finalExecutor = executor;
         AtomicInteger atomicInteger = new AtomicInteger(0);
         tasks.forEach(task -> {
             taskFutureList.add(CompletableFuture.runAsync(
@@ -126,6 +126,10 @@ public class MultiplyThreadTransactionManagerExt {
         if (immediatelyCommit) {
             mainTransactionResourceBack(!ex.get());
         }
+        
+        // 关闭线程池
+        executor.shutdown();
+        
         return taskFutureList;
     }
     /**
