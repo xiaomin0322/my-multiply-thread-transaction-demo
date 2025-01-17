@@ -19,7 +19,6 @@ import org.springframework.util.StringUtils;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import com.example.util.JobExecutorTest.TestJob;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Maps;
@@ -46,6 +45,7 @@ import com.nmb.zx.base.sys.subMod.mapper.SubModMapper;
 import com.nmb.zx.base.sys.systemLog.entity.SystemLog;
 import com.nmb.zx.base.sys.systemLog.service.SystemLogService;
 import com.nmb.zx.base.sys.utils.JobExecutor;
+import com.nmb.zx.base.sys.utils.MultiplyThreadTransactionManagerExt;
 import com.nmb.zx.common.util.JsonUtil;
 import com.nmb.zx.common.util.session.SessionUtil;
 import com.nmb.zx.common.vo.BusinessException;
@@ -79,6 +79,38 @@ public class EventService {
 	private SystemLogService systemLogService;
 	@Autowired
 	private DesignMapper designMapper;
+	
+	@Autowired
+	private MultiplyThreadTransactionManagerExt multiplyThreadTransactionManagerExt;
+	
+	
+	/**
+	 * 执行表单事件
+	 *
+	 * @param events   事件
+	 * @param variable 数据源
+	 * @param user     当前用户
+	 */
+	@SuppressWarnings("rawtypes")
+	public void execute3(List<Event> events, Map<String, Object> variable, Module module, LoginVo user) {
+		if (CollectionUtils.isEmpty(events)) {
+			return;
+		}
+		// 定义将 Job 转换为 Runnable 的函数
+		Function<Event, Runnable> jobToRunnable = event -> () -> {
+			Map<String, Object> variableNew = Maps.newHashMap(variable);
+			executeEvent(variableNew, module, user, event);
+		};
+		List<List<Event>> groupJobsByFieldList = JobExecutor.groupJobsByFieldList(events, "targetModuleId");
+		log.info("groupJobsByFieldList size:{}", groupJobsByFieldList.size());
+
+		List<List<Runnable>> convertToRunnableLists = JobExecutor.convertToRunnableLists(groupJobsByFieldList,
+				jobToRunnable);
+		log.info("convertToRunnableLists:" + convertToRunnableLists.size());
+
+		multiplyThreadTransactionManagerExt.runAsyncButWaitUntilAllDown(convertToRunnableLists, true);
+
+	}
 
 	/**
 	 * 执行表单事件
