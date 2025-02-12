@@ -12,4 +12,7 @@ import org.apache.ibatis.annotations.Mapper;
  **/
 @Mapper
 public interface UserMapper extends BaseMapper<User> {
+	public void insertUser(User user);
+	
+	public void insertBatch(User user);
 }

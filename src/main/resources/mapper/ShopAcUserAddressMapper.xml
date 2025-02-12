@@ -1,4 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.example.mapper.UserMapper">
+
+<!-- Insert User -->
+    <insert id="insertUser" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO user(name, age) VALUES(#{name}, #{age})
+    </insert>
+    
+    <!-- Insert User 必须  allowMultiQueries=true-->
+    <insert id="insertBatch" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO user(name, age) VALUES(#{name}, #{age});
+        INSERT INTO test.test(id, name, gender) VALUES('1111', '十一AAAA', 'asdasd')
+    </insert>
+    
 </mapper>

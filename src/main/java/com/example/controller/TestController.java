@@ -40,6 +40,24 @@ public class TestController {
     
     @Resource
     private MultiplyThreadTransactionManagerExt multiplyThreadTransactionManagerExt;
+    
+    @RequestMapping("insertUser")
+    public String insertUser() {
+    	User user = new User();
+    	user.setName("test");
+    	user.setAge(1111);
+    	userMapper.insertUser(user);
+        return "success";
+    }
+    
+    @RequestMapping("insertBatch")
+    public String insertBatch() {
+    	User user = new User();
+    	user.setName("test");
+    	user.setAge(111122);
+    	userMapper.insertBatch(user);
+        return "success";
+    }
 
     @RequestMapping("transaction")
     public String transaction() {
