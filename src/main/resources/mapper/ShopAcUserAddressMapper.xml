@@ -2,6 +2,32 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.example.mapper.UserMapper">
 
+	<!-- useGeneratedKeys="true" 和 keyProperty="id" 时，只会返回第一条 SQL 语句生成的主键 ID 
+	jdbc 底层批量插入不同表批量sql，返回不了批量主键ID
+	-->
+	<insert id="insertBatchList" parameterType="java.util.List" useGeneratedKeys="true" keyProperty="id">
+		<foreach collection="list" item="item" separator=";">
+			INSERT INTO ${item.tableName}
+			<trim prefix="(" suffix=")" suffixOverrides=",">
+				<foreach collection="item.data.entrySet()" index="key"
+					item="value">
+					<if test="value != null">
+						${key},
+					</if>
+				</foreach>
+			</trim>
+			VALUES
+			<trim prefix="(" suffix=")" suffixOverrides=",">
+				<foreach collection="item.data.entrySet()" index="key"
+					item="value">
+					<if test="value != null">
+						#{value},
+					</if>
+				</foreach>
+			</trim>
+		</foreach>
+	</insert>
+
 <!-- Insert User -->
     <insert id="insertUser" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO user(name, age) VALUES(#{name}, #{age})

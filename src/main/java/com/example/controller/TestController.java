@@ -1,7 +1,9 @@
 package com.example.controller;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ThreadPoolExecutor;
 
 import javax.annotation.Resource;
@@ -11,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.bean.BizData;
 import com.example.dao.User;
 import com.example.mapper.UserMapper;
 import com.example.util.MultiplyThreadTransactionManager;
@@ -56,6 +59,28 @@ public class TestController {
     	user.setName("test");
     	user.setAge(111122);
     	userMapper.insertBatch(user);
+        return "success";
+    }
+    
+    @RequestMapping("insertBatchList")
+    public String insertBatchList() {
+    	List<BizData> list = Lists.newArrayList();
+    	BizData bizData = new BizData();
+    	bizData.setTableName("user");
+    	Map<String, Object> data = new LinkedHashMap<>();
+    	data.put("name", "aaa");
+    	data.put("age", 1);
+		bizData.setData(data);
+	    list.add(bizData);
+		
+		bizData = new BizData();
+		bizData.setTableName("user");
+		data = new LinkedHashMap<>();
+    	data.put("name", "bbb");
+    	data.put("age", 2);
+		bizData.setData(data);
+		list.add(bizData);
+    	userMapper.insertBatchList(list);
         return "success";
     }
 
