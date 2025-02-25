@@ -109,7 +109,7 @@ public class MultiplyThreadTransactionManagerExt {
             if (immediatelyCommit) {
                 log.info("全部事务正常提交");
                 for (int i = 0; i < transactionStatusList.size(); i++) {
-                    //transactionResources.get(i).autoWiredTransactionResource();
+                    transactionResources.get(i).autoWiredTransactionResource();
                     Map<Object, Object> commitResourceMap = TransactionSynchronizationManager.getResourceMap();
                     log.info("提交前事务资源size{}，本身{}",commitResourceMap.size(),commitResourceMap);
                     transactionManager.commit(transactionStatusList.get(i));
